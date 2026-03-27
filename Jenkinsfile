@@ -16,25 +16,41 @@ pipeline {
 
     stage('Build - JDK 17') {
       steps {
-        sh 'mvn -B -DskipTests clean package'
+        sh '''
+          docker exec java17-builder bash -lc "
+            cd /var/jenkins_home/workspace/${JOB_NAME} &&
+            mvn -B -DskipTests clean package
+          "
+        '''
       }
     }
 
-    stage('Unit Test - JDK 17') {
+    stage('Unit Test - JDK 11') {
       steps {
-        sh 'mvn -B test'
+        sh '''
+          docker exec java11-tester bash -lc "
+            cd /var/jenkins_home/workspace/${JOB_NAME} &&
+            mvn -B test
+          "
+        '''
       }
     }
 
-    stage('SonarQube Analysis') {
+    stage('SonarQube Analysis - JDK 8') {
       steps {
         withSonarQubeEnv('sonarqube') {
           sh '''
-            mvn -B sonar:sonar \
-              -Dsonar.projectKey=mathutils \
-              -Dsonar.projectName=mathutils \
-              -Dsonar.host.url=$SONAR_HOST_URL \
-              -Dsonar.token=$SONAR_AUTH_TOKEN
+            docker exec \
+              -e SONAR_HOST_URL="$SONAR_HOST_URL" \
+              -e SONAR_AUTH_TOKEN="$SONAR_AUTH_TOKEN" \
+              java8-analyzer bash -lc "
+                cd /var/jenkins_home/workspace/${JOB_NAME} &&
+                mvn -B sonar:sonar \
+                  -Dsonar.projectKey=mathutils \
+                  -Dsonar.projectName=mathutils \
+                  -Dsonar.host.url=$SONAR_HOST_URL \
+                  -Dsonar.token=$SONAR_AUTH_TOKEN
+              "
           '''
         }
       }
@@ -64,17 +80,17 @@ pipeline {
       }
     }
 
-stage('Deploy to Kubernetes') {
-  steps {
-    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-      sh '''
-        kubectl --insecure-skip-tls-verify=true apply --validate=false -f k8s/namespace.yaml
-        sed "s|IMAGE_PLACEHOLDER|$IMAGE_FULL|g" k8s/deployment.yaml | kubectl --insecure-skip-tls-verify=true apply --validate=false -f -
-        kubectl --insecure-skip-tls-verify=true apply --validate=false -f k8s/service.yaml
-        kubectl --insecure-skip-tls-verify=true rollout status deployment/java-app -n ci-cd-demo
-      '''
+    stage('Deploy to Kubernetes') {
+      steps {
+        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+          sh '''
+            kubectl --insecure-skip-tls-verify=true apply --validate=false -f k8s/namespace.yaml
+            sed "s|IMAGE_PLACEHOLDER|$IMAGE_FULL|g" k8s/deployment.yaml | kubectl --insecure-skip-tls-verify=true apply --validate=false -f -
+            kubectl --insecure-skip-tls-verify=true apply --validate=false -f k8s/service.yaml
+            kubectl --insecure-skip-tls-verify=true rollout status deployment/java-app -n ci-cd-demo
+          '''
+        }
+      }
     }
-  }
-}
   }
 }
