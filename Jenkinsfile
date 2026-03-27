@@ -1,10 +1,6 @@
 pipeline {
   agent any
 
-  options {
-    timestamps()
-  }
-
   environment {
     DOCKERHUB_REPO = 'shishlik0shisha/java-app'
     IMAGE_TAG = "${BUILD_NUMBER}"
