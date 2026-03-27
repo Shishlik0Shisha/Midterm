@@ -64,17 +64,17 @@ pipeline {
       }
     }
 
-    stage('Deploy to Kubernetes') {
-      steps {
-        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-          sh '''
-            kubectl apply -f k8s/namespace.yaml
-            sed "s|IMAGE_PLACEHOLDER|$IMAGE_FULL|g" k8s/deployment.yaml | kubectl apply -f -
-            kubectl apply -f k8s/service.yaml
-            kubectl rollout status deployment/java-app -n ci-cd-demo
-          '''
-        }
-      }
+stage('Deploy to Kubernetes') {
+  steps {
+    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+      sh '''
+        kubectl --insecure-skip-tls-verify=true apply --validate=false -f k8s/namespace.yaml
+        sed "s|IMAGE_PLACEHOLDER|$IMAGE_FULL|g" k8s/deployment.yaml | kubectl --insecure-skip-tls-verify=true apply --validate=false -f -
+        kubectl --insecure-skip-tls-verify=true apply --validate=false -f k8s/service.yaml
+        kubectl --insecure-skip-tls-verify=true rollout status deployment/java-app -n ci-cd-demo
+      '''
     }
+  }
+}
   }
 }
