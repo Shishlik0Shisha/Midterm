@@ -45,11 +45,11 @@ pipeline {
               -e SONAR_AUTH_TOKEN="$SONAR_AUTH_TOKEN" \
               java8-analyzer bash -lc "
                 cd /var/jenkins_home/workspace/${JOB_NAME} &&
-                mvn -B sonar:sonar \
+                mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:3.10.0.2594:sonar \
                   -Dsonar.projectKey=mathutils \
                   -Dsonar.projectName=mathutils \
                   -Dsonar.host.url=$SONAR_HOST_URL \
-                  -Dsonar.token=$SONAR_AUTH_TOKEN
+                  -Dsonar.login=$SONAR_AUTH_TOKEN
               "
           '''
         }
