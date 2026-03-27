@@ -15,7 +15,6 @@
   </properties>
 
   <dependencies>
-    <!-- JUnit 4 (matches @Test @Before @After style) -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -27,14 +26,21 @@
   <build>
     <plugins>
 
-      <!-- Run tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <configuration>
+          <release>17</release>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
       </plugin>
 
-      <!-- Code coverage -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -55,7 +61,6 @@
         </executions>
       </plugin>
 
-      <!-- Static code analysis (Checkstyle) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
@@ -73,6 +78,19 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>lab.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
       </plugin>
 
     </plugins>
