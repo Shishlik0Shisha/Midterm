@@ -19,7 +19,7 @@ pipeline {
         sh '''
           docker exec java17-builder bash -lc "
             cd /var/jenkins_home/workspace/${JOB_NAME} &&
-            mvn -B -Dmaven.test.skip=true clean package
+            mvn -B -Dmaven.test.skip=true -Dmaven.compiler.release=11 -Dmaven.compiler.source=11 -Dmaven.compiler.target=11 clean package
           "
         '''
       }
@@ -30,7 +30,7 @@ pipeline {
         sh '''
           docker exec java11-tester bash -lc "
             cd /var/jenkins_home/workspace/${JOB_NAME} &&
-            mvn -B test-compile surefire:test
+            mvn -B -Dmaven.compiler.release=11 -Dmaven.compiler.source=11 -Dmaven.compiler.target=11 test-compile surefire:test
           "
         '''
       }
